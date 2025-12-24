@@ -11,12 +11,13 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import fetchModel from "../../lib/fetchModelData";
+import { API_BASE } from "../../config";
 
 function UserList() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetchModel("http://localhost:8081/api/user/list")
+    fetchModel(`${API_BASE}/api/user/list`)
       .then((response) => setUsers(response.data))
       .catch((err) => console.error(err));
   }, []);

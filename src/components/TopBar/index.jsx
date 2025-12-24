@@ -1,5 +1,6 @@
 import React from "react";
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import { API_BASE } from "../../config";
 
 function TopBar({ isLoggedIn, user, onLogout }) {
   const handleUpload = (e) => {
@@ -9,7 +10,7 @@ function TopBar({ isLoggedIn, user, onLogout }) {
     const formData = new FormData();
     formData.append("photo", file);
 
-    fetch("http://localhost:8081/api/photo/new", {
+    fetch(`${API_BASE}/api/photo/new`, {
       method: "POST",
       body: formData,
       credentials: "include",
@@ -26,7 +27,7 @@ function TopBar({ isLoggedIn, user, onLogout }) {
   };
 
   const handleLogout = () => {
-    fetch("http://localhost:8081/admin/logout", {
+    fetch(`${API_BASE}/admin/logout`, {
       method: "POST",
       credentials: "include",
     })

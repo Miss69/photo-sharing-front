@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Typography, Box, TextField, Button, Paper } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import fetchModel from "../../lib/fetchModelData";
+import { API_BASE } from "../../config";
 
 function UserDetail({ loggedInUser, onActionSuccess, onProfileUpdate }) {
   const { userId } = useParams();
@@ -20,7 +21,7 @@ function UserDetail({ loggedInUser, onActionSuccess, onProfileUpdate }) {
   const isOwner = loggedInUser && String(loggedInUser._id) === String(userId);
 
   useEffect(() => {
-    fetchModel(`http://localhost:8081/api/user/${userId}`)
+    fetchModel(`${API_BASE}/api/user/${userId}`)
       .then((res) => {
         setUser(res.data);
         setForm({
@@ -42,7 +43,7 @@ function UserDetail({ loggedInUser, onActionSuccess, onProfileUpdate }) {
       return;
     }
 
-    fetch(`http://localhost:8081/api/user/${userId}`, {
+    fetch(`${API_BASE}/api/user/${userId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
