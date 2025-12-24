@@ -1,28 +1,34 @@
-import './App.css';
+import "./App.css";
 import React, { useState, useEffect } from "react";
-import { Grid, Paper, Box, Typography, CircularProgress } from "@mui/material"; 
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { Grid, Paper, Box, Typography, CircularProgress } from "@mui/material";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
 import TopBar from "./components/TopBar";
 import UserDetail from "./components/UserDetail";
 import UserList from "./components/UserList";
 import UserPhotos from "./components/UserPhotos";
 import LoginRegister from "./components/LoginRegister";
+import { API_BASE } from "./config";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [refreshTrigger, setRefreshTrigger] = useState(0); 
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const triggerRefresh = () => {
     console.log("Trigger refresh sidebar...");
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   useEffect(() => {
-    fetch("http://localhost:8081/admin/session", { 
+    fetch(`${API_BASE}/admin/session`, {
       method: "GET",
-      credentials: "include" 
+      credentials: "include",
     })
       .then((res) => {
         if (res.ok) return res.json();
@@ -39,7 +45,7 @@ const App = () => {
       .finally(() => {
         setIsLoading(false);
       });
-  }, []); 
+  }, []);
 
   const handleLoginSuccess = (userData) => {
     setIsLoggedIn(true);
@@ -53,8 +59,11 @@ const App = () => {
 
   // Refresh session / user info after profile update
   const handleProfileUpdate = () => {
-    fetch("http://localhost:8081/admin/session", { method: "GET", credentials: "include" })
-      .then(res => res.ok ? res.json() : null)
+    fetch(`${API_BASE}/admin/session`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((res) => (res.ok ? res.json() : null))
       .then((userData) => {
         if (userData) setUser(userData);
         triggerRefresh();
@@ -64,7 +73,14 @@ const App = () => {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -75,23 +91,25 @@ const App = () => {
       <Box sx={{ flexGrow: 1 }}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <TopBar 
-              isLoggedIn={isLoggedIn} 
-              user={user} 
-              onLogout={handleLogout} 
-              onUploadSuccess={triggerRefresh} 
+            <TopBar
+              isLoggedIn={isLoggedIn}
+              user={user}
+              onLogout={handleLogout}
+              onUploadSuccess={triggerRefresh}
             />
           </Grid>
 
           <Grid item xs={12} sx={{ mt: 8 }} />
 
           <Grid item sm={3}>
-            <Paper elevation={3} sx={{ height: '80vh', overflow: 'auto', p: 1 }}>
+            <Paper
+              elevation={3}
+              sx={{ height: "80vh", overflow: "auto", p: 1 }}
+            >
               {isLoggedIn ? (
-            
-                <UserList key={refreshTrigger} /> 
+                <UserList key={refreshTrigger} />
               ) : (
-                <Typography variant="body2" sx={{ p: 2, textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ p: 2, textAlign: "center" }}>
                   Vui lòng đăng nhập
                 </Typography>
               )}
@@ -99,24 +117,57 @@ const App = () => {
           </Grid>
 
           <Grid item sm={9}>
-            <Paper elevation={3} sx={{ height: '80vh', overflow: 'auto', p: 2 }}>
+            <Paper
+              elevation={3}
+              sx={{ height: "80vh", overflow: "auto", p: 2 }}
+            >
               <Routes>
                 {isLoggedIn ? (
                   <>
-                    <Route path="/users/:userId" element={<UserDetail loggedInUser={user} onActionSuccess={triggerRefresh} onProfileUpdate={handleProfileUpdate} />} />
-                    <Route path="/photos/:userId" element={
-                      <UserPhotos 
-                        loggedInUser={user} 
-                        onActionSuccess={triggerRefresh} 
-                      />
-                    } />
-                    <Route path="/login-register" element={<Navigate to={user ? `/users/${user._id}` : "/"} />} />
-                    <Route path="/" element={<Navigate to={user ? `/users/${user._id}` : "/"} />} />
+                    <Route
+                      path="/users/:userId"
+                      element={
+                        <UserDetail
+                          loggedInUser={user}
+                          onActionSuccess={triggerRefresh}
+                          onProfileUpdate={handleProfileUpdate}
+                        />
+                      }
+                    />
+                    <Route
+                      path="/photos/:userId"
+                      element={
+                        <UserPhotos
+                          loggedInUser={user}
+                          onActionSuccess={triggerRefresh}
+                        />
+                      }
+                    />
+                    <Route
+                      path="/login-register"
+                      element={
+                        <Navigate to={user ? `/users/${user._id}` : "/"} />
+                      }
+                    />
+                    <Route
+                      path="/"
+                      element={
+                        <Navigate to={user ? `/users/${user._id}` : "/"} />
+                      }
+                    />
                   </>
                 ) : (
                   <>
-                    <Route path="/login-register" element={<LoginRegister onLoginSuccess={handleLoginSuccess} />} />
-                    <Route path="*" element={<Navigate to="/login-register" />} />
+                    <Route
+                      path="/login-register"
+                      element={
+                        <LoginRegister onLoginSuccess={handleLoginSuccess} />
+                      }
+                    />
+                    <Route
+                      path="*"
+                      element={<Navigate to="/login-register" />}
+                    />
                   </>
                 )}
               </Routes>
@@ -126,6 +177,6 @@ const App = () => {
       </Box>
     </Router>
   );
-}
+};
 
 export default App;
