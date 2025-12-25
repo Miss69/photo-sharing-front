@@ -13,6 +13,9 @@ import {
 import { Link, useParams } from "react-router-dom";
 import fetchModel from "../../lib/fetchModelData";
 import { API_BASE } from "../../config";
+import IconButton from "@mui/material/IconButton";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 
 function UserPhotos({ loggedInUser, onActionSuccess }) {
   const { userId } = useParams();
@@ -60,6 +63,51 @@ function UserPhotos({ loggedInUser, onActionSuccess }) {
     });
   };
 
+  const handleLike = async (photoId) => {
+    if (!loggedInUser) {
+      alert("Vui lòng đăng nhập để like ảnh");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/photo/like/${photoId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: loggedInUser._id }), // ← Gửi userId
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Optimistic update: cập nhật UI ngay lập tức
+        setPhotos((prevPhotos) =>
+          prevPhotos.map((photo) =>
+            photo._id === photoId
+              ? {
+                  ...photo,
+                  isLiked: data.isLiked,
+                  likeCount: data.likeCount,
+                }
+              : photo
+          )
+        );
+      } else {
+        const errorText = await res.text();
+        console.error("Like error:", res.status, errorText);
+        if (res.status === 401) {
+          alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        } else {
+          alert("Lỗi: " + errorText);
+        }
+      }
+    } catch (err) {
+      console.error("Like error:", err);
+      alert("Lỗi khi like ảnh: " + err.message);
+    }
+  };
+
   const handleDeleteComment = (photoId, commentId) => {
     if (!window.confirm("Xác nhận xóa bình luận?")) return;
     fetch(`${API_BASE}/api/photo/deleteComment/${photoId}/${commentId}`, {
@@ -104,6 +152,26 @@ function UserPhotos({ loggedInUser, onActionSuccess }) {
               sx={{ maxHeight: 600, objectFit: "contain", bgcolor: "#f5f5f5" }}
             />
             <CardContent>
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+              >
+                <IconButton
+                  onClick={() => handleLike(photo._id)}
+                  color={photo.isLiked ? "error" : "default"}
+                  disabled={!loggedInUser}
+                  aria-label="like photo"
+                >
+                  {photo.isLiked ? (
+                    <FavoriteIcon /> // Icon đỏ nếu đã like
+                  ) : (
+                    <FavoriteBorderIcon /> // Icon viền nếu chưa like
+                  )}
+                </IconButton>
+                <Typography variant="body2" color="text.secondary">
+                  {photo.likeCount || 0} lượt thích
+                </Typography>
+              </Box>
+              <Divider sx={{ mb: 2 }} />
               <Typography variant="h6">Comments</Typography>
               <Divider />
               {photo.comments?.map((c) => {
